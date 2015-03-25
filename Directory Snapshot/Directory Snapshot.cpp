@@ -72,10 +72,11 @@ long long Snapshot( const string& sourcePath, const string& destinationPath )
 
 int main()
 {
-	string sourcePath = "D:\\anmol\\software\\windows essentials", destinationPath = "D:\\anmol\\Downloads";
+	string sourcePath, destinationPath;
 	cout << "Enter source path -:\n";
-	//getline( cin, DirPath );
+	getline( cin, sourcePath );
 	cout << "Enter destination path -:\n";
-	//getline( cin, Destination );
+	getline( cin, destinationPath );
 	Snapshot( sourcePath, destinationPath );
+	system("pause");
 }
