@@ -5,7 +5,7 @@ It just stores the names and sizes of all the files and folders contained in the
 
 Compiled using Visual Studio 2012, so works only on Windows.
 
-To-Do -:
+**To-Do** -:
 
  - Create a portable version using Boost.
  - Store the hash of the file along with the size, using a suitable hash algorithm.
