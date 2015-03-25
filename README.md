@@ -9,7 +9,7 @@ Compiled using Visual Studio 2012, so works only on Windows.
 
 **To-Do** -:
 
- - Make it cross - platform version using Boost.
+ - Make it cross - platform using Boost.
  - Store the hash of the file along with the size, using a suitable hash algorithm.
  - Add more extensive error-handling.
 
