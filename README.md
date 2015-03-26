@@ -1,3 +1,4 @@
+# Directory Snapshot
 Creates a ( recursive ) backup of a directory in the form of interlinked HTML files, structured in the same form as the input directory.  
  >**It does not take a backup of the contents of the directory.**
  
