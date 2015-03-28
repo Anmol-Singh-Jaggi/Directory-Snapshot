@@ -15,6 +15,14 @@ ofstream Log;
 // Buffer soft errors to output them separately after the informational messages in the log file.
 stringstream LogErrorStream;
 
+// Convert any type to its string representation
+template<typename T> std::string ToString( const T obj )
+{
+	std::stringstream ss;
+	ss << obj;
+	return ss.str();
+}
+
 // Convert the input size ( in bytes ) to its nearest units in the ratio of 1024.
 // ( Trying to do what Windows does on right-clicking the properties of a folder )
 string RoundSize( const long long& size )
