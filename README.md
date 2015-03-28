@@ -6,13 +6,12 @@ It just stores the names and sizes of all the files and folders contained in the
 
 *It can be thought of as a hyperlinked version of the [`dir /s`][1] or [`tree /f`][2] commands.*
 
-Compiled using Visual Studio 2012, so works only on Windows.
+**Requirements -:**
+ - A compiler supporting C++ 11
+ - [Boost][3]
 
-**To-Do** -:
-
- - Make it cross - platform using Boost.
- - Store the hash of the file along with the size, using a suitable hash algorithm.
- - Add more extensive error-handling.
-
+An example has been included to demonstrate its functioning.  
+For running the input example yourself, first delete the sample output -  *example/output/coding*, and then execute the program by entering the path to *example/input/coding* as the source directory and the path to *example/output* as the destination directory.
 [1]:https://technet.microsoft.com/en-in/library/cc755121.aspx
 [2]:https://www.microsoft.com/resources/documentation/windows/xp/all/proddocs/en-us/tree.mspx?mfr=true
+[3]:http://www.boost.org/
