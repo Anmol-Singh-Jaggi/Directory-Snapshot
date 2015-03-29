@@ -12,8 +12,7 @@ using namespace boost::filesystem;
 
 const path LogFileName = "DirectorySnapshotLog.txt";
 ofstream Log;
-// Buffer soft errors to output them separately after the informational messages in the log file.
-stringstream LogErrorStream;
+stringstream LogErrorStream;  // Buffer soft errors to output them separately after the informational messages in the log file.
 
 // Convert any type to its string representation
 template<typename T> std::string ToString( const T obj )
