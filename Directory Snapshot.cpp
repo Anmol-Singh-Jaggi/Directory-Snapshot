@@ -24,7 +24,7 @@ template<typename T> std::string ToString( const T obj )
 }
 
 // Convert the input size ( in bytes ) to its nearest units in the ratio of 1024.
-// ( Trying to do what Windows does on right-clicking the properties of a folder )
+// ( Trying to do how Windows reports size of a file on right clicking and checking its properties )
 string RoundSize( const long long& size )
 {
 	double ret = ( double )size;
@@ -58,7 +58,7 @@ void DirectoryIterate( const path& dirPath, vector<path>& dirContents )
 }
 
 // Create a set of HTML files containing information about source directory's contents and store it in the destination directory, in a directory structure similar to the source directory
-// Returns the total size of the sourcePath directory
+// Returns the total size of the source directory
 long long Snapshot( const path& sourcePath, const path& destinationPath )
 {
 	Log << sourcePath << endl;
