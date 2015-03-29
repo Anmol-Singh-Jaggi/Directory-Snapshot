@@ -65,7 +65,16 @@ long long Snapshot( const path& sourcePath, const path& destinationPath )
 	long long sourcePathSize = 0; // Total size of the source directory
 
 	vector<path> dirContents, files, directories;
-	DirectoryIterate( sourcePath, dirContents );
+	try
+	{
+		DirectoryIterate( sourcePath, dirContents );
+	}
+	catch ( const filesystem_error& ex )
+	{
+		LogErrorStream << ex.what() << endl;
+		return 0;
+	}
+
 	sort( dirContents.begin(), dirContents.end() ); // sort, since directory iteration is not ordered on some file systems
 	for ( const auto& item : dirContents )
 	{
@@ -79,18 +88,19 @@ long long Snapshot( const path& sourcePath, const path& destinationPath )
 		}
 	}
 
-	const string sourcePathName = sourcePath.filename().string(); // Name of the source folder
-	path pwd = destinationPath / sourcePathName; // Present working directory
-	boost::system::error_code ec;
-	create_directory( pwd, ec );
-	if ( ec )
+	path pwd = destinationPath / sourcePath.filename(); // Present working directory
+	try
 	{
-		LogErrorStream << "Error creating " << absolute( pwd ) << " : " << ec.message() << endl;
+		create_directory( pwd );
+	}
+	catch ( const filesystem_error& ex )
+	{
+		LogErrorStream << ex.what() << endl;
 		return 0;
 	}
 
 	// Write the HTML file header.
-	const path outFilePath = ( pwd / sourcePathName ).string() + ".html";
+	const path outFilePath = ( pwd / sourcePath.filename() ).string() + ".html";
 	ofstream outFile( outFilePath.string() );
 	if ( !outFile )
 	{
@@ -101,7 +111,7 @@ long long Snapshot( const path& sourcePath, const path& destinationPath )
 	outFile << "<!DOCTYPE html>\n";
 	outFile << "<meta charset=\"UTF-8\">\n";
 	outFile << "<html>\n";
-	outFile << "<title>" << sourcePathName << "</title>\n";
+	outFile << "<title>" << sourcePath.filename() << "</title>\n";
 	outFile << "<body>\n";
 
 	// Write information about the files
@@ -169,7 +179,7 @@ int main()
 		}
 		else
 		{
-			Log << "ERRORS -:\n" << LogErrorStream.str() << endl;
+			Log << "\nERRORS -:\n\n" << LogErrorStream.str() << endl;
 			cout << "There were some errors during the execution of this program !\n\nCheck " << absolute( LogFileName ) << " for details.\n";
 		}
 	}
