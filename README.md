@@ -8,10 +8,11 @@ It just stores the names and sizes of all the files and folders contained in a d
 
 **Requirements -:**
  - A compiler supporting C++ 11
- - The [Boost][3] C++ library.
+ - The [Boost][3] [filesystem][4] library.
 
 **An example has been included to demonstrate its functioning.**  
  > For running the input example yourself, first delete the sample output -  *example/output/coding*, and then execute the program by entering the path to *example/input/coding* as the source directory and the path to *example/output* as the destination directory.
 [1]:https://technet.microsoft.com/en-in/library/cc755121.aspx
 [2]:https://www.microsoft.com/resources/documentation/windows/xp/all/proddocs/en-us/tree.mspx?mfr=true
-[3]:http://www.boost.org/
+[3]:http://www.boost.org
+[4]:http://www.boost.org/doc/libs/1_57_0/libs/filesystem/doc/index.htm
