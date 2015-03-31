@@ -5,52 +5,85 @@
 #include <cassert>
 #include <vector>
 #include <cstdlib>
+#define BOOST_FILESYSTEM_NO_DEPRECATED
 #include <boost/filesystem.hpp>
 
 using namespace std;
 using namespace boost::filesystem;
 
-const path LogFileName = "DirectorySnapshotLog.txt";
-ofstream Log;
-stringstream LogErrorStream;  // Buffer soft errors to output them separately after the informational messages in the log file.
+static ofstream Log;
+static stringstream LogErrorStream;  // Buffer soft errors to output them separately after the informational messages in the log file.
 
 // Convert any type to its string representation
-template<typename T> std::string ToString( const T obj )
+template<typename T> static string ToString( const T& obj )
 {
-	std::stringstream ss;
+	stringstream ss;
 	ss << obj;
 	return ss.str();
 }
 
+// Escape HTML special characters
+static string EscapeHTMLSpecialChars( const path& PathName, const bool& href = false )
+{
+	string in = PathName.string();
+	string ret;
+	for( decltype( in.size() ) i = 0; i < in.size(); i++ )
+	{
+		if( in[i] == '&' )
+		{
+			ret += "&amp;";
+		}
+		else if( in[i] == '<' )
+		{
+			ret += "&lt;";
+		}
+		else if( in[i] == '>' )
+		{
+			ret += "&gt;";
+		}
+		else if( in[i] == '"' )
+		{
+			ret += "&quot;";
+		}
+		else if( in[i] == '\'' )
+		{
+			ret += "&#39;";
+		}
+		else if( href && in[i] == '#' ) // If the input is an href attribute
+		{
+			ret += "%23";
+		}
+		else if( href && in[i] == '?' )
+		{
+			ret += "%3F";
+		}
+		else
+		{
+			ret += in[i];
+		}
+	}
+	return ret;
+}
+
 // Convert the input size ( in bytes ) to its nearest units in the ratio of 1024.
 // ( Trying to do how Windows reports size of a file on right clicking and checking its properties )
-string RoundSize( const long long& size )
+static string RoundSize( const long long& size )
 {
 	double ret = ( double )size;
-
-	vector<string> units;
-	units.push_back( "bytes" );
-	units.push_back( "KB" );
-	units.push_back( "MB" );
-	units.push_back( "GB" );
-	units.push_back( "TB" );
-
+	static const vector<string> units {"bytes", "KiB", "MiB", "GiB", "TiB"};
 	const unsigned ratio = 1024;
-	unsigned i = 0;
-
-	while ( ret > ratio && i < units.size() - 1 )
+	unsigned i;
+	for( i = 0; ret > ratio && i < units.size() - 1; i++ )
 	{
 		ret /= ratio;
-		i++;
 	}
-
 	return ToString( ret ) + " " + units[i];
 }
 
 // Iterate through a directory and store everything found ( regular files, directories or any other special files ) in the input container
-void DirectoryIterate( const path& dirPath, vector<path>& dirContents )
+static void DirectoryIterate( const path& dirPath, vector<path>& dirContents )
 {
-	if ( exists( dirPath ) && is_directory( dirPath ) )
+	if( is_directory( dirPath ) )
 	{
 		copy( directory_iterator( dirPath ), directory_iterator(), back_inserter( dirContents ) );
 	}
@@ -58,9 +91,11 @@ void DirectoryIterate( const path& dirPath, vector<path>& dirContents )
 
 // Create a set of HTML files containing information about source directory's contents and store it in the destination directory, in a directory structure similar to the source directory
 // Returns the total size of the source directory
-long long Snapshot( const path& sourcePath, const path& destinationPath )
+static long long Snapshot( const path& sourcePath, const path& destinationPath )
 {
 	Log << sourcePath << endl;
+
+	boost::system::error_code ec;
 
 	long long sourcePathSize = 0; // Total size of the source directory
 
@@ -69,16 +104,17 @@ long long Snapshot( const path& sourcePath, const path& destinationPath )
 	{
 		DirectoryIterate( sourcePath, dirContents );
 	}
-	catch ( const filesystem_error& ex )
+	catch( const filesystem_error& ex )
 	{
 		LogErrorStream << ex.what() << endl;
-		return 0;
+		return 0; // cannot iterate through the directory, so no point in going further
 	}
 
 	sort( dirContents.begin(), dirContents.end() ); // sort, since directory iteration is not ordered on some file systems
-	for ( const auto& item : dirContents )
+	for( const auto& item : dirContents )
 	{
-		if ( is_directory( item ) )
+		ec.clear();
+		if( is_directory( item, ec ) )
 		{
 			directories.push_back( item );
 		}
@@ -86,101 +122,123 @@ long long Snapshot( const path& sourcePath, const path& destinationPath )
 		{
 			files.push_back( item );
 		}
+		if( ec )
+		{
+			LogErrorStream << "Failed to determine if " << absolute( item ) << " is a directory or not : " << ec.message() << endl;
+		}
 	}
 
-	path pwd = destinationPath / sourcePath.filename(); // Present working directory
-	try
+	const path pwd = destinationPath / sourcePath.filename(); // Present working directory
+	ec.clear();
+	create_directory( pwd, ec );
+	if( ec )
 	{
-		create_directory( pwd );
+		LogErrorStream << "Failed to create " << absolute( pwd ) << " : " << ec.message() << endl;
+		return 0;
 	}
-	catch ( const filesystem_error& ex )
+
+	// Create the output file.
+	const path outFilePath = ( pwd / sourcePath.filename() ).string() + ".html";
+	ofstream outFile( outFilePath.string() );
+	if( !outFile )
 	{
-		LogErrorStream << ex.what() << endl;
+		LogErrorStream << "Failed to create " << absolute( outFilePath ) << " : " << strerror( errno ) << endl;
 		return 0;
 	}
 
 	// Write the HTML file header.
-	const path outFilePath = ( pwd / sourcePath.filename() ).string() + ".html";
-	ofstream outFile( outFilePath.string() );
-	if ( !outFile )
+	outFile << ""
+					"<!DOCTYPE html>\n"
+					"<html>\n"
+					"<head>\n"
+					"<meta charset=\"UTF-8\">\n"
+					"<title>" << EscapeHTMLSpecialChars( sourcePath.filename() ) << "</title>\n"
+					"</head>\n"
+					"<body>\n";
+
+	// Write information about the files contained in the source directory
+	outFile << ""
+					"<h1> Files </h1>\n"
+					"<table>\n";
+	for( const auto& file : files )
 	{
-		LogErrorStream << "Error creating " << absolute( outFilePath ) << " : " << strerror( errno ) << endl;
-		return 0;
+		outFile << ""
+						" <tr>\n"
+						"  <td>" << EscapeHTMLSpecialChars( file.filename() ) << "</td>\n"
+						"  <td>";
+
+		ec.clear();
+		auto size = file_size( file, ec );
+		if( ec )
+		{
+			LogErrorStream << "Failed to read size of " << absolute( file ) << " : " << ec.message() << endl;
+		}
+		else
+		{
+			outFile << RoundSize( size );
+			sourcePathSize += size;
+		}
+		outFile << ""
+						"</td>\n"
+						" </tr>\n";
 	}
+	outFile << "</table>\n";
 
-	outFile << "<!DOCTYPE html>\n";
-	outFile << "<meta charset=\"UTF-8\">\n";
-	outFile << "<html>\n";
-	outFile << "<title>" << sourcePath.filename() << "</title>\n";
-	outFile << "<body>\n";
-
-	// Write information about the files
-	outFile << "<h1> Files </h1>\n";
-	for ( const auto& file : files )
-	{
-		auto size = file_size( file );
-		outFile << file.filename() << "----" << RoundSize( size ) << "<br>\n";
-		sourcePathSize += size;
-	}
-
-	// Write information about the directories
-	outFile << "<h1> Directories </h1>\n";
-	for ( const auto& directory : directories )
+	// Write information about the directories contained in the source directory
+	outFile << ""
+					"<h1> Directories </h1>\n"
+					"<table>\n";
+	for( const auto& directory : directories )
 	{
 		long long size = Snapshot( sourcePath / directory.filename(), pwd );
 		sourcePathSize += size;
-		outFile << "<a href=\"" << ( directory.filename() / directory.filename() ).generic_string() << ".html\">" << directory.filename() << "</a>----" << RoundSize( size ) << "<br>\n";
+		outFile << ""
+						" <tr>\n"
+						"  <td><a href=\"" << EscapeHTMLSpecialChars( ( directory.filename() / directory.filename() ).generic_string(), true ) << ".html\">" << EscapeHTMLSpecialChars( directory.filename() ) << "</a></td>\n" <<
+						"  <td>" << RoundSize( size ) << "</td>\n"
+						" </tr>\n";
 	}
+	outFile << "</table>\n";
 
 	// Write the footer
-	outFile << "<br>\n";
-	outFile << "<h3>Total directory size = " << RoundSize( sourcePathSize ) << "</h3><br>\n";
-	outFile << "</body>\n";
-	outFile << "</html>\n";
+	outFile << ""
+					"<br>\n"
+					"<h3>Total directory size = " << RoundSize( sourcePathSize ) << "</h3><br>\n"
+					"</body>\n"
+					"</html>\n";
 
 	return sourcePathSize;
 }
 
-
-int main()
+int main( int argc, char** argv )
 {
-	string sourcePath, destinationPath;
-
-	cout << "Enter source directory path -:\n";
-	getline( cin, sourcePath );
-	if ( !is_directory( sourcePath ) )
+	if( argc < 3 )
 	{
-		cout << absolute( sourcePath ) << " is not a directory !\n";
+		cout << "Usage : " << argv[0] << " <source_directory_path> <destination_directory_path> [log_file_path]\n";
 		return -1;
 	}
 
-	cout << "Enter destination directory path -:\n";
-	getline( cin, destinationPath );
-	if ( !is_directory( destinationPath ) )
+	const path LogFilePath = ( ( argc >= 4 ) ? path( argv[3] ) : "DirectorySnapshotLog.txt" );
+	Log.open( LogFilePath.string() );
+	if( !Log )
 	{
-		cout << absolute( destinationPath ) << " is not a directory !\n";
+		cerr << "Error creating " << absolute( LogFilePath ) << " : " << strerror( errno ) << endl;
 		return -1;
 	}
 
-	cout << "\n";
-	Log.open( LogFileName.string() );
-	if ( !Log )
-	{
-		cerr << "Error creating " << absolute( LogFileName ) << " : " << strerror( errno ) << endl;
-	}
+	Snapshot( argv[1], argv[2] );
 
-	Snapshot( sourcePath, destinationPath );
-
-	if ( Log )
+	if( Log )
 	{
-		if ( LogErrorStream.str().empty() )
+		if( LogErrorStream.str().empty() )
 		{
 			cout << "The program ran without any errors.\n";
 		}
 		else
 		{
 			Log << "\nERRORS -:\n\n" << LogErrorStream.str() << endl;
-			cout << "There were some errors during the execution of this program !\n\nCheck " << absolute( LogFileName ) << " for details.\n";
+			cout << "There were some errors during the execution of this program !\n\nCheck " << absolute( LogFilePath ) << " for details.\n";
+			return -1;
 		}
 	}
 }
