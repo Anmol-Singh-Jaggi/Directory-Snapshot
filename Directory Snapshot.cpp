@@ -212,13 +212,14 @@ static long long Snapshot( const path& sourcePath, const path& destinationPath )
 
 int main( int argc, char** argv )
 {
+	const string defaultLogFilePath = "DirectorySnapshotLog.txt";
 	if( argc < 3 )
 	{
-		cout << "Usage : " << argv[0] << " <source_directory_path> <destination_directory_path> [log_file_path]\n";
+		cout << "Usage : " << argv[0] << " <source_directory_path> <destination_directory_path> [log_file_path=" << defaultLogFilePath << "]\n";
 		return -1;
 	}
 
-	const path LogFilePath = ( ( argc >= 4 ) ? path( argv[3] ) : "DirectorySnapshotLog.txt" );
+	const path LogFilePath = ( ( argc >= 4 ) ? path( argv[3] ) : defaultLogFilePath );
 	Log.open( LogFilePath.string() );
 	if( !Log )
 	{
