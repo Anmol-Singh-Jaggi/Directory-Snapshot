@@ -212,7 +212,7 @@ static long long Snapshot( const path& sourcePath, const path& destinationPath )
 
 int main( int argc, char** argv )
 {
-	const string defaultLogFilePath = "DirectorySnapshotLog.txt";
+	const path defaultLogFilePath = "DirectorySnapshotLog.txt";
 	if( argc < 3 )
 	{
 		cout << "Usage : " << argv[0] << " <source_directory_path> <destination_directory_path> [log_file_path=" << defaultLogFilePath << "]\n";
