@@ -214,7 +214,7 @@ int main( int argc, char** argv )
 {
 	const path defaultLogFilePath = "DirectorySnapshotLog.txt";
 	
-	if ( argc < 3 )
+	if( argc < 3 )
 	{
 		cout << "Usage : " << argv[0] << " <source_directory_path> <destination_directory_path> [log_file_path=" << defaultLogFilePath << "]\n";
 		return -1;
