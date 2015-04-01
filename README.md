@@ -12,6 +12,10 @@ It just stores the names and sizes of all the files and folders contained in a d
 
 **An example has been included to demonstrate its functioning.**  
  > For running the input example yourself, first delete the sample output -  *example/output/coding*, and then execute the program by entering the path to *example/input/coding* as the source directory and the path to *example/output* as the destination directory.
+
+**TODO -:**
+ - Ask the user whether to follow links or not ( as a command-line argument ).
+
 [1]:https://technet.microsoft.com/en-in/library/cc755121.aspx
 [2]:https://www.microsoft.com/resources/documentation/windows/xp/all/proddocs/en-us/tree.mspx?mfr=true
 [3]:http://www.boost.org
