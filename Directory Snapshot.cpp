@@ -5,6 +5,7 @@
 #include <cassert>
 #include <vector>
 #include <cstdlib>
+
 #define BOOST_FILESYSTEM_NO_DEPRECATED
 #include <boost/filesystem.hpp>
 
@@ -89,11 +90,42 @@ static void DirectoryIterate( const path& dirPath, vector<path>& dirContents )
 	}
 }
 
+// Returns the difference in height in the filesystem tree, between the directory "parent" and the file/folder "descendant"
+static int HeightDiff( const path parent, path descendant )
+{
+	int diff = 0;
+	while ( descendant != parent )
+	{
+		descendant = descendant.parent_path();
+		if ( descendant.empty() )
+		{
+			diff = -1;  // "descendant" is in fact not a descendant of "parent"
+			break;
+		}
+		diff++;
+	}
+	return diff;
+}
+
+// Returns true if the file/folder "descendant" is a descendant of the directory "parent"
+static bool IsDescendant( const path parent, path descendant )
+{
+	return HeightDiff( parent, descendant ) >= 1;
+}
+
 // Create a set of HTML files containing information about source directory's contents and store it in the destination directory, in a directory structure similar to the source directory
 // Returns the total size of the source directory
 static long long Snapshot( const path& sourcePath, const path& destinationPath )
 {
 	Log << sourcePath << endl;
+
+	// This should be executed only once during the whole program execution ( during the first invocation of Snapshot() )
+	static bool isDescendant = IsDescendant( sourcePath, destinationPath );
+	if ( isDescendant )
+	{
+		LogErrorStream << "The destination path cannot be a descendant of the source path!! Please provide an alternate destination path !!" << endl;
+		return -1;
+	}
 
 	boost::system::error_code ec;
 
@@ -213,8 +245,8 @@ static long long Snapshot( const path& sourcePath, const path& destinationPath )
 int main( int argc, char** argv )
 {
 	const path defaultLogFilePath = "DirectorySnapshotLog.txt";
-	
-	if( argc < 3 )
+
+	if ( argc < 3 )
 	{
 		cout << "Usage : " << argv[0] << " <source_directory_path> <destination_directory_path> [log_file_path=" << defaultLogFilePath << "]\n";
 		return -1;
@@ -224,11 +256,18 @@ int main( int argc, char** argv )
 	Log.open( LogFilePath.string() );
 	if ( !Log )
 	{
-		cerr << "Error creating " << absolute( LogFilePath ) << " : " << strerror( errno ) << endl;
+		cerr << "Error creating " << LogFilePath << " : " << strerror( errno ) << endl;
 		return -1;
 	}
 
-	Snapshot( argv[1], argv[2] );
+	try
+	{
+		Snapshot( canonical( argv[1] ), canonical( argv[2] ) );
+	}
+	catch ( const filesystem_error& ex )
+	{
+		LogErrorStream << ex.what() << endl;
+	}
 
 	if ( Log )
 	{
@@ -244,4 +283,3 @@ int main( int argc, char** argv )
 		}
 	}
 }
-
