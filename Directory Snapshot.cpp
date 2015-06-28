@@ -7,7 +7,7 @@
 #include <cstdlib>
 
 #define BOOST_FILESYSTEM_NO_DEPRECATED
-#include <boost/filesystem.hpp>
+#include "boost/filesystem.hpp"
 
 using namespace std;
 using namespace boost::filesystem;
@@ -185,6 +185,10 @@ static long long Snapshot( const path& sourcePath, const path& destinationPath )
 					"<head>\n"
 					"<meta charset=\"UTF-8\">\n"
 					"<title>" << EscapeHTMLSpecialChars( sourcePath.filename() ) << "</title>\n"
+					"<style type=\"text/css\">\n"
+					" tr:nth-child(even) { background-color: #FFFFFF; }\n"
+					" tr:nth-child(odd) { background-color: #F1F1F1; }\n"
+					"</style>"
 					"</head>\n"
 					"<body>\n";
 
