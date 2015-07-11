@@ -21,4 +21,4 @@ It just stores the names and sizes of all the files and folders contained in a d
 [3]:http://www.boost.org
 [4]:http://www.boost.org/doc/libs/1_57_0/libs/filesystem/doc/index.htm
 
-[![Analytics](https://ga-beacon.appspot.com/UA-46899860-1/chromeskel_a/readme)](https://github.com/igrigorik/ga-beacon)
+[![Analytics](https://github.com/Anmol-Singh-Jaggi/Directory-Snapshot/README.md)](https://github.com/igrigorik/ga-beacon)
