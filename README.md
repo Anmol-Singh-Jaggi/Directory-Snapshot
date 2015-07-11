@@ -7,7 +7,7 @@ It just stores the names and sizes of all the files and folders contained in a d
 *It can be thought of as a hyperlinked version of the [`dir /s`][1] or [`tree /f`][2] commands.*
 
 **Requirements -:**
- - A compiler supporting C++ 11
+ - A compiler supporting C++11
  - The [Boost][3] [filesystem][4] library.
 
 **An example has been included to demonstrate its functioning.**  
