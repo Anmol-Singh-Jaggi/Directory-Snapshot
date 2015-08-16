@@ -1,8 +1,9 @@
 # Directory Snapshot
-Creates a recursive backup of a directory in the form of interlinked HTML files, structured in the same form as the input directory.  
+Creates a recursive backup of a directory in the form of interlinked HTML files, structured in the same form as the input directory.
+  
  >**It does not take a backup of the contents of the directory.**
  
-It just stores the names and sizes of all the files and folders contained in a directory, so that in case of a data loss, we atleast know what all needs to be recovered. ( because, why not ?!! XD )  
+It just stores the names and sizes of all the files and folders contained in a directory, so that in case of a data loss, at least we know what all needs to be recovered.
 
 *It can be thought of as a hyperlinked version of the [`dir /s`][1] or [`tree /f`][2] commands.*
 
@@ -11,7 +12,7 @@ It just stores the names and sizes of all the files and folders contained in a d
  - The [Boost][3] [filesystem][4] library.
 
 **An example has been included to demonstrate its functioning.**  
- > For running the input example yourself, first delete the sample output -  *example/output/coding*, and then execute the program by entering the path to *example/input/coding* as the source directory and the path to *example/output* as the destination directory.
+ - For running the input example yourself, first delete the sample output - `example/output/coding`, and then execute the program by entering the path to `example/input/coding` as the source directory and the path to `example/output` as the destination directory.
 
 **TODO -:**
  - Ask the user whether to follow links or not ( as a command-line argument ).
