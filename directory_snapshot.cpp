@@ -359,7 +359,7 @@ int main( int argc, char** argv )
 		filesInSourcePath = GetNumberOfFiles( sourcePath );
 
 		cout << "\nInitiating the snapshot process ...\n\n";
-		Snapshot( canonical( argv[1] ), canonical( argv[2] ) );
+		Snapshot( sourcePath, destinationPath );
 		cout << "\n\n";
 	}
 	catch ( const filesystem_error& ex )
