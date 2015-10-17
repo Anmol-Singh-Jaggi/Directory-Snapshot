@@ -14,10 +14,12 @@ using namespace std;
 using namespace boost::filesystem;
 
 
+typedef long long LL;
+typedef unsigned long long ULL;
+
 // File handles for log files
 static ofstream logError, logInfo;
 
-typedef unsigned long long ULL;
 // Used for displaying progress status
 static ULL filesInSourcePath;
 
@@ -42,16 +44,17 @@ std::string NumberToString( const T& obj )
 
 // Convert the input size ( in bytes ) to its nearest units in the ratio of 1024.
 // Trying to replicate the way in which an OS reports size of a file on right clicking and checking its properties.
-static string RoundSize( const long long& size )
+static string RoundSize( const ULL& size )
 {
 	static const vector<string> units {"bytes", "KiB", "MiB", "GiB", "TiB"};
 	const unsigned ratio = 1024;
 
 	double ret = ( double )size;
-	unsigned i;
-	for ( i = 0; ret > ratio && i < units.size() - 1; i++ )
+	unsigned i = 0;
+	while ( ret > ratio && i < units.size() - 1 )
 	{
 		ret /= ratio;
+		i++;
 	}
 
 	return NumberToString( ret ) + " " + units[i];
@@ -97,7 +100,7 @@ ULL GetNumberOfFiles( const path& inputPath = ".", const ULL& milestone = 1000 )
 // Escape HTML special characters
 static string EscapeHtmlSpecialChars( const path& fileName, const bool& href = false )
 {
-	string fileNameString = fileName.string();
+	const string fileNameString = fileName.string();
 
 	string escapedFileName;
 	for ( size_t i = 0; i < fileNameString.size(); i++ )
@@ -151,19 +154,22 @@ static void DirectoryIterate( const path& dirPath, vector<path>& dirContents )
 }
 
 // Returns the difference in height in the filesystem tree, between the directory "parent" and the file/folder "descendant"
-static int HeightDiff( const path parent, path descendant )
+static LL HeightDiff( const path parent, path descendant )
 {
-	int diff = 0;
+	LL diff = 0;
+
 	while ( descendant != parent )
 	{
 		descendant = descendant.parent_path();
 		if ( descendant.empty() )
 		{
-			diff = -1;  // "descendant" is in fact not a descendant of "parent"
+			// "descendant" is in fact not a descendant of "parent"
+			diff = -1;
 			break;
 		}
 		diff++;
 	}
+
 	return diff;
 }
 
@@ -175,7 +181,7 @@ static bool IsDescendant( const path parent, path descendant )
 
 // Create a set of HTML files containing information about source directory's contents and store it in the destination directory, in a directory structure similar to the source directory
 // Returns the total size of the source directory
-static long long Snapshot( const path& sourcePath, const path& destinationPath )
+static ULL Snapshot( const path& sourcePath, const path& destinationPath )
 {
 	logInfo << sourcePath << endl;
 
@@ -184,14 +190,15 @@ static long long Snapshot( const path& sourcePath, const path& destinationPath )
 	static bool isDescendant = IsDescendant( sourcePath, destinationPath );
 	if ( isDescendant )
 	{
-		logError << "The destination path cannot be a descendant of the source path!! Please provide an alternate destination path !!" << endl;
-		return -1;
+		// Fatal error!
+		const string errorMessage = "Error: The destination path cannot be a descendant of the source path!! Please provide an alternate destination path !!";
+		throw runtime_error( errorMessage );
 	}
 
 	boost::system::error_code ec;
 
 	// Total size of the source directory ( in bytes )
-	long long sourcePathSize = 0;
+	ULL sourcePathSize = 0;
 
 	// Containers to hold list of paths of files and directories
 	vector<path> dirContents, files, directories;
@@ -208,6 +215,8 @@ static long long Snapshot( const path& sourcePath, const path& destinationPath )
 
 	// Sort, since directory iteration is not ordered on some file systems
 	sort( dirContents.begin(), dirContents.end() );
+
+	// Extract directories and non-directories into separate containers
 	for ( const auto& item : dirContents )
 	{
 		ec.clear();
@@ -285,7 +294,7 @@ static long long Snapshot( const path& sourcePath, const path& destinationPath )
 						"  <td>";
 
 		ec.clear();
-		auto size = file_size( file, ec );
+		const auto size = file_size( file, ec );
 		if ( ec )
 		{
 			logError << "Failed to read size of " << absolute( file ) << " : " << ec.message() << endl;
@@ -300,6 +309,9 @@ static long long Snapshot( const path& sourcePath, const path& destinationPath )
 						" </tr>\n";
 	}
 	outFile << "</table>\n";
+
+	// List of files is no longer needed.
+	// So, deallocate its memory to prevent memory explosion during recursion
 	files.clear();
 
 	// Write information about the directories contained in the source directory
@@ -308,7 +320,7 @@ static long long Snapshot( const path& sourcePath, const path& destinationPath )
 					"<table>\n";
 	for ( const auto& directory : directories )
 	{
-		long long size = Snapshot( sourcePath / directory.filename(), pwd );
+		const auto size = Snapshot( sourcePath / directory.filename(), pwd );
 		sourcePathSize += size;
 		outFile << ""
 						" <tr>\n"
@@ -362,10 +374,9 @@ int main( int argc, char** argv )
 		Snapshot( sourcePath, destinationPath );
 		cout << "\n\n";
 	}
-	catch ( const filesystem_error& ex )
+	catch ( const exception& ex )
 	{
 		cerr << ex.what() << endl;
 		logError << ex.what() << endl;
 	}
 }
-
