@@ -278,7 +278,7 @@ static ULL Snapshot( const path& sourcePath, const path& destinationPath )
 					"<style type=\"text/css\">\n"
 					" tr:nth-child(even) { background-color: #FFFFFF; }\n"
 					" tr:nth-child(odd) { background-color: #F1F1F1; }\n"
-					"</style>"
+					"</style>\n"
 					"</head>\n"
 					"<body>\n";
 
