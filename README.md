@@ -10,12 +10,10 @@ It can be useful when you do not have enough space for a full backup, and your d
 **Requirements:**
  - A compiler supporting C++11.
  - The [Boost.Filesystem][4] library.
-
-**Installation:**
  - Before compiling this, you need to [build the Boost.Filesystem object-library][4].
- - Execute *`INSTALL`*.
  
 **Usage:**
+ - Execute *`BUILD`* to compile.
  - An example has been included to demonstrate its functioning.
  - For running the program on the example yourself, execute *`RUN`*.
 
