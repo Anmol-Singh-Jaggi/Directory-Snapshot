@@ -373,8 +373,10 @@ int main ( int argc, char** argv )
 	try
 	{
 		const path sourcePath = canonical ( argv[1] );
-		create_directories ( argv[2] );
-		const path destinationPath = canonical ( argv[2] );
+
+		const path destinationPath = weakly_canonical ( argv[2] );
+		create_directories ( destinationPath );
+
 
 		create_directories ( logFolderPath );
 		const path errorLogPath = logFolderPath / "errors.log";
