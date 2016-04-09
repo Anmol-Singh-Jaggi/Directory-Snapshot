@@ -18,15 +18,15 @@ typedef long long LL;
 typedef unsigned long long ULL;
 
 // File handles for log files
-static ofstream logError, logInfo;
+static std::ofstream logError, logInfo;
 
 // Used for displaying progress status
 static ULL filesInSourcePath;
 
 // Convert string to ULL
-ULL ToULL( const string& str )
+ULL ToULL ( const string& str )
 {
-	stringstream ss( str );
+	stringstream ss ( str );
 	ULL ret;
 	ss >> ret;
 	return ret;
@@ -34,22 +34,22 @@ ULL ToULL( const string& str )
 
 // Convert number to string
 template<typename T>
-std::string NumberToString( const T& obj )
+std::string NumberToString ( const T& obj )
 {
 	std::stringstream ss;
-	ss << std::fixed << std::setprecision( 2 );
+	ss << std::fixed << std::setprecision ( 2 );
 	ss << obj;
 	return ss.str();
 }
 
 // Convert the input size ( in bytes ) to its nearest units in the ratio of 1024.
 // Trying to replicate the way in which an OS reports size of a file on right clicking and checking its properties.
-static string RoundSize( const ULL& size )
+static string RoundSize ( const ULL& size )
 {
 	static const vector<string> units {"bytes", "KiB", "MiB", "GiB", "TiB"};
 	const unsigned ratio = 1024;
 
-	double ret = ( double )size;
+	double ret = ( double ) size;
 	unsigned i = 0;
 	while ( ret > ratio && i < units.size() - 1 )
 	{
@@ -57,24 +57,27 @@ static string RoundSize( const ULL& size )
 		i++;
 	}
 
-	return NumberToString( ret ) + " " + units[i];
+	return NumberToString ( ret ) + " " + units[i];
 }
 
 // Returns the number of files in the input directory
 // The progress status is printed after every `milestone` files are visited.
 // Here "file" refers to everything (regular_files, directories, symlinks etc.)
-ULL GetNumberOfFiles( const path& inputPath = ".", const ULL& milestone = 1000 )
+ULL GetNumberOfFiles ( const path& inputPath = ".",
+                       const ULL& milestone = 1000 )
 {
 	ULL numberOfFiles = 0;
 
 	if ( milestone == 0 )
 	{
-		numberOfFiles = std::distance( recursive_directory_iterator( inputPath ), recursive_directory_iterator() );
+		numberOfFiles = std::distance ( recursive_directory_iterator ( inputPath ),
+		                                recursive_directory_iterator() );
 	}
 	else
 	{
 		ULL filesVisitedIterator = 0;
-		for ( recursive_directory_iterator it( inputPath ); it != recursive_directory_iterator(); ++it )
+		for ( recursive_directory_iterator it ( inputPath );
+		      it != recursive_directory_iterator(); ++it )
 		{
 			filesVisitedIterator++;
 			if ( filesVisitedIterator == milestone )
@@ -98,7 +101,8 @@ ULL GetNumberOfFiles( const path& inputPath = ".", const ULL& milestone = 1000 )
 }
 
 // Escape HTML special characters
-static string EscapeHtmlSpecialChars( const path& fileName, const bool& href = false )
+static string EscapeHtmlSpecialChars ( const path& fileName,
+                                       const bool& href = false )
 {
 	const string fileNameString = fileName.string();
 
@@ -145,16 +149,17 @@ static string EscapeHtmlSpecialChars( const path& fileName, const bool& href = f
 
 
 // Iterate through a directory and store everything found ( regular files, directories or any other special files ) in the input container
-static void DirectoryIterate( const path& dirPath, vector<path>& dirContents )
+static void DirectoryIterate ( const path& dirPath, vector<path>& dirContents )
 {
-	if ( is_directory( dirPath ) )
+	if ( is_directory ( dirPath ) )
 	{
-		copy( directory_iterator( dirPath ), directory_iterator(), back_inserter( dirContents ) );
+		copy ( directory_iterator ( dirPath ), directory_iterator(),
+		       back_inserter ( dirContents ) );
 	}
 }
 
 // Returns the difference in height in the filesystem tree, between the directory "parent" and the file/folder "descendant"
-static LL HeightDiff( const path parent, path descendant )
+static LL HeightDiff ( const path parent, path descendant )
 {
 	LL diff = 0;
 
@@ -174,25 +179,26 @@ static LL HeightDiff( const path parent, path descendant )
 }
 
 // Returns true if the file/folder "descendant" is a descendant of the directory "parent"
-static bool IsDescendant( const path parent, path descendant )
+static bool IsDescendant ( const path parent, path descendant )
 {
-	return HeightDiff( parent, descendant ) >= 1;
+	return HeightDiff ( parent, descendant ) >= 1;
 }
 
 // Create a set of HTML files containing information about source directory's contents and store it in the destination directory, in a directory structure similar to the source directory
 // Returns the total size of the source directory
-static ULL Snapshot( const path& sourcePath, const path& destinationPath )
+static ULL Snapshot ( const path& sourcePath, const path& destinationPath )
 {
 	logInfo << sourcePath << endl;
 
 	// This should be executed only once during the whole program execution
 	// ( only during the first invocation of this function )
-	static bool isDescendant = IsDescendant( sourcePath, destinationPath );
+	static bool isDescendant = IsDescendant ( sourcePath, destinationPath );
 	if ( isDescendant )
 	{
 		// Fatal error!
-		const string errorMessage = "Error: The destination path cannot be a descendant of the source path!! Please provide an alternate destination path !!";
-		throw runtime_error( errorMessage );
+		const string errorMessage =
+		  "Error: The destination path cannot be a descendant of the source path!! Please provide an alternate destination path !!";
+		throw runtime_error ( errorMessage );
 	}
 
 	boost::system::error_code ec;
@@ -204,7 +210,7 @@ static ULL Snapshot( const path& sourcePath, const path& destinationPath )
 	vector<path> dirContents, files, directories;
 	try
 	{
-		DirectoryIterate( sourcePath, dirContents );
+		DirectoryIterate ( sourcePath, dirContents );
 	}
 	catch ( const filesystem_error& ex )
 	{
@@ -214,23 +220,24 @@ static ULL Snapshot( const path& sourcePath, const path& destinationPath )
 	}
 
 	// Sort, since directory iteration is not ordered on some file systems
-	sort( dirContents.begin(), dirContents.end() );
+	sort ( dirContents.begin(), dirContents.end() );
 
 	// Extract directories and non-directories into separate containers
 	for ( const auto& item : dirContents )
 	{
 		ec.clear();
-		if ( is_directory( item, ec ) )
+		if ( is_directory ( item, ec ) )
 		{
-			directories.push_back( item );
+			directories.push_back ( item );
 		}
 		else if ( !ec )
 		{
-			files.push_back( item );
+			files.push_back ( item );
 		}
 		else
 		{
-			logError << "Failed to determine if " << absolute( item ) << " is a directory or not : " << ec.message() << endl;
+			logError << "Failed to determine if " << absolute ( item ) <<
+			         " is a directory or not : " << ec.message() << endl;
 		}
 
 		/********************* Show progress status *******************/
@@ -243,7 +250,7 @@ static ULL Snapshot( const path& sourcePath, const path& destinationPath )
 		if ( filesVisitedPercentage >= milestone - 0.000001 )
 		{
 			milestone += milestoneIncrement;
-			cout << "\r" << ( int )filesVisitedPercentage << "%" << std::flush;
+			cout << "\r" << ( int ) filesVisitedPercentage << "%" << std::flush;
 		}
 
 	}
@@ -252,61 +259,64 @@ static ULL Snapshot( const path& sourcePath, const path& destinationPath )
 	// Present working directory
 	const path pwd = destinationPath / sourcePath.filename();
 	ec.clear();
-	create_directory( pwd, ec );
+	create_directory ( pwd, ec );
 	if ( ec )
 	{
-		logError << "Failed to create " << absolute( pwd ) << " : " << ec.message() << endl;
+		logError << "Failed to create " << absolute ( pwd ) << " : " << ec.message() <<
+		         endl;
 		return 0;
 	}
 
 	// Create the output file.
 	const path outFilePath = ( pwd / sourcePath.filename() ).string() + ".html";
-	ofstream outFile( outFilePath.string() );
+	std::ofstream outFile ( outFilePath.string() );
 	if ( !outFile )
 	{
-		logError << "Failed to create " << absolute( outFilePath ) << " : " << strerror( errno ) << endl;
+		logError << "Failed to create " << absolute ( outFilePath ) << " : " <<
+		         strerror ( errno ) << endl;
 		return 0;
 	}
 
 	// Write the HTML file header.
 	outFile << ""
-					"<!DOCTYPE html>\n"
-					"<html>\n"
-					"<head>\n"
-					"<meta charset=\"UTF-8\">\n"
-					"<title>" << EscapeHtmlSpecialChars( sourcePath.filename() ) << "</title>\n"
-					"<style type=\"text/css\">\n"
-					" tr:nth-child(even) { background-color: #FFFFFF; }\n"
-					" tr:nth-child(odd) { background-color: #F1F1F1; }\n"
-					"</style>\n"
-					"</head>\n"
-					"<body>\n";
+	        "<!DOCTYPE html>\n"
+	        "<html>\n"
+	        "<head>\n"
+	        "<meta charset=\"UTF-8\">\n"
+	        "<title>" << EscapeHtmlSpecialChars ( sourcePath.filename() ) << "</title>\n"
+	        "<style type=\"text/css\">\n"
+	        " tr:nth-child(even) { background-color: #FFFFFF; }\n"
+	        " tr:nth-child(odd) { background-color: #F1F1F1; }\n"
+	        "</style>\n"
+	        "</head>\n"
+	        "<body>\n";
 
 	// Write information about the files contained in the source directory
 	outFile << ""
-					"<h1> Files </h1>\n"
-					"<table>\n";
+	        "<h1> Files </h1>\n"
+	        "<table>\n";
 	for ( const auto& file : files )
 	{
 		outFile << ""
-						" <tr>\n"
-						"  <td>" << EscapeHtmlSpecialChars( file.filename() ) << "</td>\n"
-						"  <td>";
+		        " <tr>\n"
+		        "  <td>" << EscapeHtmlSpecialChars ( file.filename() ) << "</td>\n"
+		        "  <td>";
 
 		ec.clear();
-		const auto size = file_size( file, ec );
+		const auto size = file_size ( file, ec );
 		if ( ec )
 		{
-			logError << "Failed to read size of " << absolute( file ) << " : " << ec.message() << endl;
+			logError << "Failed to read size of " << absolute ( file ) << " : " <<
+			         ec.message() << endl;
 		}
 		else
 		{
-			outFile << RoundSize( size );
+			outFile << RoundSize ( size );
 			sourcePathSize += size;
 		}
 		outFile << ""
-						"</td>\n"
-						" </tr>\n";
+		        "</td>\n"
+		        " </tr>\n";
 	}
 	outFile << "</table>\n";
 
@@ -316,62 +326,67 @@ static ULL Snapshot( const path& sourcePath, const path& destinationPath )
 
 	// Write information about the directories contained in the source directory
 	outFile << ""
-					"<h1> Directories </h1>\n"
-					"<table>\n";
+	        "<h1> Directories </h1>\n"
+	        "<table>\n";
 	for ( const auto& directory : directories )
 	{
-		const auto size = Snapshot( sourcePath / directory.filename(), pwd );
+		const auto size = Snapshot ( sourcePath / directory.filename(), pwd );
 		sourcePathSize += size;
 		outFile << ""
-						" <tr>\n"
-						"  <td><a href=\"" << EscapeHtmlSpecialChars( ( directory.filename() / directory.filename() ).generic_string(), true ) << ".html\">" << EscapeHtmlSpecialChars( directory.filename() ) << "</a></td>\n" <<
-						"  <td>" << RoundSize( size ) << "</td>\n"
-						" </tr>\n";
+		        " <tr>\n"
+		        "  <td><a href=\"" << EscapeHtmlSpecialChars ( ( directory.filename() /
+		            directory.filename() ).generic_string(),
+		            true ) << ".html\">" << EscapeHtmlSpecialChars ( directory.filename() ) <<
+		        "</a></td>\n" <<
+		        "  <td>" << RoundSize ( size ) << "</td>\n"
+		        " </tr>\n";
 	}
 	outFile << "</table>\n";
 
 	// Write the footer
 	outFile << ""
-					"<br>\n"
-					"<h3>Total directory size = " << RoundSize( sourcePathSize ) << "</h3><br>\n"
-					"</body>\n"
-					"</html>\n";
+	        "<br>\n"
+	        "<h3>Total directory size = " << RoundSize ( sourcePathSize ) << "</h3><br>\n"
+	        "</body>\n"
+	        "</html>\n";
 
 	return sourcePathSize;
 }
 
-int main( int argc, char** argv )
+int main ( int argc, char** argv )
 {
 	path logFolderPath = "./logs";
 
 	if ( argc < 3 )
 	{
-		cout << "Usage : " << argv[0] << " <source_directory_path> <destination_directory_path> [log_folder_path=" << logFolderPath << "]\n";
+		cout << "Usage : " << argv[0] <<
+		     " <source_directory_path> <destination_directory_path> [log_folder_path=" <<
+		     logFolderPath << "]\n";
 		return -1;
 	}
 
 	if ( argc > 3 )
 	{
-		logFolderPath = path( argv[3] );
+		logFolderPath = path ( argv[3] );
 	}
 
 	try
 	{
-		const path sourcePath = canonical( argv[1] );
-		create_directories( argv[2] );
-		const path destinationPath = canonical( argv[2] );
+		const path sourcePath = canonical ( argv[1] );
+		create_directories ( argv[2] );
+		const path destinationPath = canonical ( argv[2] );
 
-		create_directories( logFolderPath );
+		create_directories ( logFolderPath );
 		const path errorLogPath = logFolderPath / "errors.log";
-		logError.open( errorLogPath.string() );
+		logError.open ( errorLogPath.string() );
 		const path infoLogPath = logFolderPath / "info.log";
-		logInfo.open( infoLogPath.string() );
+		logInfo.open ( infoLogPath.string() );
 
 		cout << "Calculating size of input ...\n";
-		filesInSourcePath = GetNumberOfFiles( sourcePath );
+		filesInSourcePath = GetNumberOfFiles ( sourcePath );
 
 		cout << "\nInitiating the snapshot process ...\n\n";
-		Snapshot( sourcePath, destinationPath );
+		Snapshot ( sourcePath, destinationPath );
 		cout << "\n\n";
 	}
 	catch ( const exception& ex )
