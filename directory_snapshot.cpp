@@ -18,14 +18,19 @@ typedef long long LL;
 typedef unsigned long long ULL;
 
 
-// File handles for log files
+// File handles for log files.
 static std::ofstream logError, logInfo;
 
-// Used for displaying progress status
+// Used for displaying progress status.
 static ULL filesInSourcePath;
 
+// Used for storing the original destination path
+// to be checked against the current source path in Snapshot()
+// to prevent infinite recursion.
+static path destinationPathOriginal;
 
-// Convert string to ULL
+
+// Convert string to ULL.
 ULL ToULL ( const string& str )
 {
 	stringstream ss ( str );
@@ -35,7 +40,7 @@ ULL ToULL ( const string& str )
 }
 
 
-// Convert number to string
+// Convert number to string.
 template<typename T>
 std::string NumberToString ( const T& obj )
 {
@@ -47,7 +52,8 @@ std::string NumberToString ( const T& obj )
 
 
 // Convert the input size ( in bytes ) to its nearest units in the ratio of 1024.
-// Trying to replicate the way in which an OS reports size of a file on right clicking and checking its properties.
+// Trying to replicate the way in which an OS reports size of a file
+// on right clicking and checking its properties.
 static string RoundSize ( const ULL& size )
 {
 	static const vector<string> units {"bytes", "KiB", "MiB", "GiB", "TiB"};
@@ -65,9 +71,9 @@ static string RoundSize ( const ULL& size )
 }
 
 
-// Returns the number of files in the input directory
+// Returns the number of files in the input directory.
 // The progress status is printed after every `milestone` files are visited.
-// Here "file" refers to everything (regular_files, directories, symlinks etc.)
+// Here "file" refers to everything (regular_files, directories, symlinks etc.).
 ULL GetNumberOfFiles ( const path& inputPath = ".",
                        const ULL& milestone = 1000 )
 {
@@ -106,7 +112,7 @@ ULL GetNumberOfFiles ( const path& inputPath = ".",
 }
 
 
-// Escape HTML special characters
+// Escape HTML special characters.
 static string EscapeHtmlSpecialChars ( const path& fileName,
                                        const bool& href = false )
 {
@@ -154,7 +160,7 @@ static string EscapeHtmlSpecialChars ( const path& fileName,
 }
 
 
-// Iterate through a directory and store everything found ( regular files, directories or any other special files ) in the input container
+// Iterate through a directory and store every type of file found in the input container.
 static void DirectoryIterate ( const path& dirPath, vector<path>& dirContents )
 {
 	if ( is_directory ( dirPath ) )
@@ -165,14 +171,43 @@ static void DirectoryIterate ( const path& dirPath, vector<path>& dirContents )
 }
 
 
-// Create a set of HTML files containing information about source directory's contents and store it in the destination directory, in a directory structure similar to the source directory
+// Create a set of HTML files containing information about source directory's contents
+// and store it in the destination directory,
+// in a directory structure similar to the source directory.
 // Returns the total size of the source directory.
-// This shouldn't be called directly from main(); call SnapshotWrapper() instead !!
 static ULL Snapshot ( const path& sourcePath, const path& destinationPath )
 {
 	logInfo << sourcePath << endl;
 
 	boost::system::error_code ec;
+
+	// Present working directory
+	const path pwd = destinationPath / sourcePath.filename();
+	ec.clear();
+	create_directory ( pwd, ec );
+	if ( ec )
+	{
+		logError << "Failed to create " << absolute ( pwd ) << " : " << ec.message() <<
+		         endl;
+		return 0;
+	}
+
+	// Create the output file.
+	const path outFilePath = ( pwd / sourcePath.filename() ).string() + ".html";
+	std::ofstream outFile ( outFilePath.string() );
+	if ( !outFile )
+	{
+		logError << "Failed to create " << absolute ( outFilePath ) << " : " <<
+		         strerror ( errno ) << endl;
+		return 0;
+	}
+
+	if ( sourcePath == destinationPathOriginal )
+	{
+		logInfo << "Original destination path reached!!" << endl;
+		outFile << "<b>This was the original destination path!</b>\n";
+		return 0;
+	}
 
 	// Total size of the source directory ( in bytes )
 	ULL sourcePathSize = 0;
@@ -231,26 +266,6 @@ static ULL Snapshot ( const path& sourcePath, const path& destinationPath )
 	}
 	dirContents.clear();
 
-	// Present working directory
-	const path pwd = destinationPath / sourcePath.filename();
-	ec.clear();
-	create_directory ( pwd, ec );
-	if ( ec )
-	{
-		logError << "Failed to create " << absolute ( pwd ) << " : " << ec.message() <<
-		         endl;
-		return 0;
-	}
-
-	// Create the output file.
-	const path outFilePath = ( pwd / sourcePath.filename() ).string() + ".html";
-	std::ofstream outFile ( outFilePath.string() );
-	if ( !outFile )
-	{
-		logError << "Failed to create " << absolute ( outFilePath ) << " : " <<
-		         strerror ( errno ) << endl;
-		return 0;
-	}
 
 	// Write the HTML file header.
 	outFile << ""
@@ -327,7 +342,7 @@ static ULL Snapshot ( const path& sourcePath, const path& destinationPath )
 		outFile << ""
 		        " <tr>\n"
 		        "  <td >" << EscapeHtmlSpecialChars ( symlink.filename() ) << "</td>\n"
-		        "  <td >" << EscapeHtmlSpecialChars ( read_symlink(symlink) ) << "</td>\n"
+		        "  <td >" << EscapeHtmlSpecialChars ( read_symlink ( symlink ) ) << "</td>\n"
 		        " </tr>\n";
 	}
 	outFile << "</table>\n";
@@ -340,53 +355,6 @@ static ULL Snapshot ( const path& sourcePath, const path& destinationPath )
 	        "</html>\n";
 
 	return sourcePathSize;
-}
-
-
-// Returns the difference in height in the filesystem tree, between the directory "parent" and the file/folder "descendant"
-static LL HeightDiff ( const path parent, path descendant )
-{
-	LL diff = 0;
-
-	while ( descendant != parent )
-	{
-		descendant = descendant.parent_path();
-		if ( descendant.empty() )
-		{
-			// "descendant" is in fact not a descendant of "parent"
-			diff = -1;
-			break;
-		}
-		diff++;
-	}
-
-	return diff;
-}
-
-
-// Returns true if the file/folder "descendant" is a descendant of the directory "parent"
-static bool IsDescendant ( const path parent, path descendant )
-{
-	return HeightDiff ( parent, descendant ) >= 1;
-}
-
-
-// A wrapper for the main Snapshot() function.
-// Mainly there for validating dependancy.
-// This should be called from main() rather than Snapshot() directly !!
-static void SnapshotWrapper ( const path& sourcePath,
-                              const path& destinationPath )
-{
-	bool isDescendant = IsDescendant ( sourcePath, destinationPath );
-	if ( isDescendant )
-	{
-		// Fatal error!
-		const string errorMessage =
-		  "Error: The destination path cannot be a descendant of the source path!! Please provide an alternate destination path !!";
-		throw runtime_error ( errorMessage );
-	}
-
-	Snapshot ( sourcePath, destinationPath );
 }
 
 
@@ -414,6 +382,8 @@ int main ( int argc, char** argv )
 		const path destinationPath = weakly_canonical ( argv[2] );
 		create_directories ( destinationPath );
 
+		destinationPathOriginal = destinationPath;
+
 
 		create_directories ( logFolderPath );
 		const path errorLogPath = logFolderPath / "errors.log";
@@ -425,7 +395,7 @@ int main ( int argc, char** argv )
 		filesInSourcePath = GetNumberOfFiles ( sourcePath );
 
 		cout << "\nInitiating the snapshot process ...\n\n";
-		SnapshotWrapper ( sourcePath, destinationPath );
+		Snapshot ( sourcePath, destinationPath );
 		cout << "\n\n";
 	}
 	catch ( const exception& ex )
