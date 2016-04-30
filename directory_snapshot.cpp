@@ -327,6 +327,7 @@ static ULL Snapshot ( const path& sourcePath, const path& destinationPath )
 		outFile << ""
 		        " <tr>\n"
 		        "  <td >" << EscapeHtmlSpecialChars ( symlink.filename() ) << "</td>\n"
+		        "  <td >" << EscapeHtmlSpecialChars ( read_symlink(symlink) ) << "</td>\n"
 		        " </tr>\n";
 	}
 	outFile << "</table>\n";
