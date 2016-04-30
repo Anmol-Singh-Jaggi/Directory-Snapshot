@@ -17,11 +17,13 @@ using namespace boost::filesystem;
 typedef long long LL;
 typedef unsigned long long ULL;
 
+
 // File handles for log files
 static std::ofstream logError, logInfo;
 
 // Used for displaying progress status
 static ULL filesInSourcePath;
+
 
 // Convert string to ULL
 ULL ToULL ( const string& str )
@@ -32,6 +34,7 @@ ULL ToULL ( const string& str )
 	return ret;
 }
 
+
 // Convert number to string
 template<typename T>
 std::string NumberToString ( const T& obj )
@@ -41,6 +44,7 @@ std::string NumberToString ( const T& obj )
 	ss << obj;
 	return ss.str();
 }
+
 
 // Convert the input size ( in bytes ) to its nearest units in the ratio of 1024.
 // Trying to replicate the way in which an OS reports size of a file on right clicking and checking its properties.
@@ -59,6 +63,7 @@ static string RoundSize ( const ULL& size )
 
 	return NumberToString ( ret ) + " " + units[i];
 }
+
 
 // Returns the number of files in the input directory
 // The progress status is printed after every `milestone` files are visited.
@@ -99,6 +104,7 @@ ULL GetNumberOfFiles ( const path& inputPath = ".",
 
 	return numberOfFiles;
 }
+
 
 // Escape HTML special characters
 static string EscapeHtmlSpecialChars ( const path& fileName,
@@ -158,48 +164,13 @@ static void DirectoryIterate ( const path& dirPath, vector<path>& dirContents )
 	}
 }
 
-// Returns the difference in height in the filesystem tree, between the directory "parent" and the file/folder "descendant"
-static LL HeightDiff ( const path parent, path descendant )
-{
-	LL diff = 0;
-
-	while ( descendant != parent )
-	{
-		descendant = descendant.parent_path();
-		if ( descendant.empty() )
-		{
-			// "descendant" is in fact not a descendant of "parent"
-			diff = -1;
-			break;
-		}
-		diff++;
-	}
-
-	return diff;
-}
-
-// Returns true if the file/folder "descendant" is a descendant of the directory "parent"
-static bool IsDescendant ( const path parent, path descendant )
-{
-	return HeightDiff ( parent, descendant ) >= 1;
-}
 
 // Create a set of HTML files containing information about source directory's contents and store it in the destination directory, in a directory structure similar to the source directory
-// Returns the total size of the source directory
+// Returns the total size of the source directory.
+// This shouldn't be called directly from main(); call SnapshotWrapper() instead !!
 static ULL Snapshot ( const path& sourcePath, const path& destinationPath )
 {
 	logInfo << sourcePath << endl;
-
-	// This should be executed only once during the whole program execution
-	// ( only during the first invocation of this function )
-	static bool isDescendant = IsDescendant ( sourcePath, destinationPath );
-	if ( isDescendant )
-	{
-		// Fatal error!
-		const string errorMessage =
-		  "Error: The destination path cannot be a descendant of the source path!! Please provide an alternate destination path !!";
-		throw runtime_error ( errorMessage );
-	}
 
 	boost::system::error_code ec;
 
@@ -358,6 +329,54 @@ static ULL Snapshot ( const path& sourcePath, const path& destinationPath )
 	return sourcePathSize;
 }
 
+
+// Returns the difference in height in the filesystem tree, between the directory "parent" and the file/folder "descendant"
+static LL HeightDiff ( const path parent, path descendant )
+{
+	LL diff = 0;
+
+	while ( descendant != parent )
+	{
+		descendant = descendant.parent_path();
+		if ( descendant.empty() )
+		{
+			// "descendant" is in fact not a descendant of "parent"
+			diff = -1;
+			break;
+		}
+		diff++;
+	}
+
+	return diff;
+}
+
+
+// Returns true if the file/folder "descendant" is a descendant of the directory "parent"
+static bool IsDescendant ( const path parent, path descendant )
+{
+	return HeightDiff ( parent, descendant ) >= 1;
+}
+
+
+// A wrapper for the main Snapshot() function.
+// Mainly there for validating dependancy.
+// This should be called from main() rather than Snapshot() directly !!
+static void SnapshotWrapper ( const path& sourcePath,
+                              const path& destinationPath )
+{
+	bool isDescendant = IsDescendant ( sourcePath, destinationPath );
+	if ( isDescendant )
+	{
+		// Fatal error!
+		const string errorMessage =
+		  "Error: The destination path cannot be a descendant of the source path!! Please provide an alternate destination path !!";
+		throw runtime_error ( errorMessage );
+	}
+
+	Snapshot ( sourcePath, destinationPath );
+}
+
+
 int main ( int argc, char** argv )
 {
 	path logFolderPath = "./logs";
@@ -393,7 +412,7 @@ int main ( int argc, char** argv )
 		filesInSourcePath = GetNumberOfFiles ( sourcePath );
 
 		cout << "\nInitiating the snapshot process ...\n\n";
-		Snapshot ( sourcePath, destinationPath );
+		SnapshotWrapper ( sourcePath, destinationPath );
 		cout << "\n\n";
 	}
 	catch ( const exception& ex )
