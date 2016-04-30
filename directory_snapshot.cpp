@@ -226,6 +226,11 @@ static ULL Snapshot ( const path& sourcePath, const path& destinationPath )
 	for ( const auto& item : dirContents )
 	{
 		ec.clear();
+		if ( is_symlink ( item, ec ) )
+		{
+			logInfo << "Skipping symlink " << item << endl;
+			continue;
+		}
 		if ( is_directory ( item, ec ) )
 		{
 			directories.push_back ( item );
