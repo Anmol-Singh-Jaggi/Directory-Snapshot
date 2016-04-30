@@ -177,8 +177,8 @@ static ULL Snapshot ( const path& sourcePath, const path& destinationPath )
 	// Total size of the source directory ( in bytes )
 	ULL sourcePathSize = 0;
 
-	// Containers to hold list of paths of files and directories
-	vector<path> dirContents, files, directories;
+	// Containers to hold list of paths of files, directories, symlinks etc.
+	vector<path> dirContents, files, directories, symlinks;
 	try
 	{
 		DirectoryIterate ( sourcePath, dirContents );
@@ -193,16 +193,15 @@ static ULL Snapshot ( const path& sourcePath, const path& destinationPath )
 	// Sort, since directory iteration is not ordered on some file systems
 	sort ( dirContents.begin(), dirContents.end() );
 
-	// Extract directories and non-directories into separate containers
+	// Categorize the contents into separate containers depending upon their file-types
 	for ( const auto& item : dirContents )
 	{
 		ec.clear();
 		if ( is_symlink ( item, ec ) )
 		{
-			logInfo << "Skipping symlink " << item << endl;
-			continue;
+			symlinks.push_back ( item );
 		}
-		if ( is_directory ( item, ec ) )
+		else if ( is_directory ( item, ec ) )
 		{
 			directories.push_back ( item );
 		}
@@ -212,8 +211,8 @@ static ULL Snapshot ( const path& sourcePath, const path& destinationPath )
 		}
 		else
 		{
-			logError << "Failed to determine if " << absolute ( item ) <<
-			         " is a directory or not : " << ec.message() << endl;
+			logError << "Failed to determine the file-type of " << absolute ( item ) <<
+			         " : " << ec.message() << endl;
 		}
 
 		/********************* Show progress status *******************/
@@ -315,6 +314,19 @@ static ULL Snapshot ( const path& sourcePath, const path& destinationPath )
 		            true ) << ".html\">" << EscapeHtmlSpecialChars ( directory.filename() ) <<
 		        "</a></td>\n" <<
 		        "  <td>" << RoundSize ( size ) << "</td>\n"
+		        " </tr>\n";
+	}
+	outFile << "</table>\n";
+
+	// Write information about the symlinks contained in the source directory
+	outFile << ""
+	        "<h1> Symlinks </h1>\n"
+	        "<table>\n";
+	for ( const auto& symlink : symlinks )
+	{
+		outFile << ""
+		        " <tr>\n"
+		        "  <td >" << EscapeHtmlSpecialChars ( symlink.filename() ) << "</td>\n"
 		        " </tr>\n";
 	}
 	outFile << "</table>\n";
