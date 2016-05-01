@@ -204,6 +204,8 @@ static ULL Snapshot ( const path& sourcePath, const path& destinationPath )
 
 	if ( sourcePath == destinationPathOriginal )
 	{
+		// Don't go further down the filesystem heirarchy
+		// as it will result in an infinite recursion.
 		logInfo << "Original destination path reached!!" << endl;
 		outFile << "<b>This was the original destination path!</b>\n";
 		return 0;

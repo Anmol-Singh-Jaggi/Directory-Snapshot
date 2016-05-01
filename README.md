@@ -9,7 +9,7 @@ It can be useful when you do not have enough space for a full backup, and your d
 
 **Requirements:**
  - A compiler supporting C++11.
- - The [Boost.Filesystem][4] library.
+ - The [Boost.Filesystem][3] library.
  - Before compiling this, you need to [build the Boost.Filesystem object-library][4].
  
 **Usage:**
@@ -22,5 +22,5 @@ It can be useful when you do not have enough space for a full backup, and your d
 
 [1]:https://technet.microsoft.com/en-in/library/cc755121.aspx
 [2]:https://www.microsoft.com/resources/documentation/windows/xp/all/proddocs/en-us/tree.mspx?mfr=true
-[3]:http://www.boost.org/doc/libs/1_57_0/libs/filesystem/doc/index.htm
-[4]:http://www.boost.org/doc/libs/1_57_0/libs/filesystem/doc/index.htm#Building
+[3]:http://www.boost.org/doc/libs/1_60_0/libs/filesystem/doc/index.htm
+[4]:http://www.boost.org/doc/libs/1_60_0/libs/filesystem/doc/index.htm#Building
