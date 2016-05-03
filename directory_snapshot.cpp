@@ -386,7 +386,6 @@ int main ( int argc, char** argv )
 
 		destinationPathOriginal = destinationPath;
 
-
 		create_directories ( logFolderPath );
 		const path errorLogPath = logFolderPath / "errors.log";
 		logError.open ( errorLogPath.string() );
