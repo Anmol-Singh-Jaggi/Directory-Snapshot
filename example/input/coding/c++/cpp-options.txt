@@ -1,2 +1,0 @@
--Wall -Wextra -Wfatal-errors -Wunreachable-code -Wfloat-equal -Winline -Wshadow -Wredundant-decls -Wcast-qual -Wcast-align -Wlogical-op -pedantic -Winvalid-pch
--std=c++14

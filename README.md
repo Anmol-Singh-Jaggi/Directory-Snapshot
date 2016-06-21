@@ -15,7 +15,7 @@ It can be useful when you do not have enough space for a full backup, and your d
 **Usage:**
  - Execute *`BUILD`* to compile.
  - An example has been included to demonstrate its functioning.
- - For running the program on the example yourself, execute *`RUN`*.
+ - For running the program on the example, execute *`run`*.
 
 **TODO:**
  - Reorganize the project by splitting into multiple files.

@@ -1,0 +1,3 @@
+-Wall -Wextra -Wfatal-errors -Wunreachable-code -Wfloat-equal -Winline -Wshadow -Wredundant-decls -Wcast-qual -Wcast-align -Wlogical-op -pedantic
+-std=c++14
+-include /home/anmol/Data/anmol/coding/cpp/cpp/options/prettyprint.hpp

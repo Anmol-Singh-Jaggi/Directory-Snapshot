@@ -1,2 +1,0 @@
-rm -r example/output
-./directory_snapshot example/input/coding example/output
