@@ -18,41 +18,48 @@
 
 ## Usage
 
-    dir_snap [-h] [-dry] [-no-bar] [-ignore-hidden] []
-               source-path dest-path
+```
+dir_snap [-h] [-dry] [-no-bar] [-no-hid] [-no-sym] [-max-rec MAX_RECURSION_DEPTH] src-path dest-path
 
-    positional arguments:
-    left-path             The path of the left(source) directory.
-    right-path            The path of the right(destination) directory.
+positional arguments:
+  src-path              The path of the source directory.
+  dest-path             The path of the destination directory.
 
-    optional arguments:
-      -h, --help            show this help message and exit
-      -dry, --dry-run       Just estimate the size of the input directory.
-      -no-bar, --hide-progress-bar
-                            Whether to hide the progress bar or not (default false).  
-                            Will be silently ignored if `tqdm` dependency not found.
-      -no-hid, --ignore-hidden
-                            Whether to ignore hidden files and directories or not (default false).
-      -no-sym, --ignore-symlinks
-                            Whether to ignore symlinks or not (default false).
-      -max-rec, --max-recursion
-                            The max recursion depth (default infinite).
+optional arguments:
+  -h, --help            show this help message and exit
+  -dry, --dry-run       Just estimate the size of source directory and exit
+  -no-bar, --hide-progress-bar
+                        Whether to hide the progress bar or not (default
+                        false). Will be silently ignored if `tqdm` package not
+                        found.
+  -no-hid, --ignore-hidden
+                        Whether to ignore hidden files and directories or not
+                        (default false).
+  -no-sym, --ignore-symlinks
+                        Whether to ignore symlinks or not (default false).
+  -max-rec MAX_RECURSION_DEPTH, --max-recursion-depth MAX_RECURSION_DEPTH
+                        Maximum recursion depth (non-negative integer only)
+```
 
-## ToDo
- - Implement `dry-run` option.
- - Implement `no-hid` option.
- - Implement `no-sym` option.
- - Implement `max-rec` option.
+ - Example:  
+   `python3 dir_snap.py /Users/ajaggi/projects /Users/ajaggi/Desktop/snapshots --ignore-symlinks -no-hid -max-rec=5`
+
+## To-Do
+ - Debug progress bar populating way too soon for projects dir.
+ - Use `logging` module instead of `print` statements.
+ - Log full exception stacktrace rather than just the message.
  - Test for unpredictable IO.
+ - Add demo.
+ - Publish to pypi.
  - Add test cases.
  - Add code coverage.
  - Setup `tox` and `Travis CI`.
- - Explore parallel processing.
  - Add benchmarks.
- - Add demo.
- - Use `logging` module instead of `print` statements.
- - Publish to pypi.
-
+ - Explore parallel processing.
+ - ~~Implement `dry-run` option.~~
+ - ~~Implement `no-hid` option.~~
+ - ~~Implement `no-sym` option.~~
+ - ~~Implement `max-rec` option.~~
 
 [1]:https://technet.microsoft.com/en-in/library/cc755121.aspx
 [2]:https://www.microsoft.com/resources/documentation/windows/xp/all/proddocs/en-us/tree.mspx?mfr=true
