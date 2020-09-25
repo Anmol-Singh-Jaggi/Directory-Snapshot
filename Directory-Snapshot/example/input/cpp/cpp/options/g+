@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-
-# g++ along with some custom options
-g++ @/home/anmol/Data/anmol/coding/cpp/cpp/options/cpp-options.txt "$@"

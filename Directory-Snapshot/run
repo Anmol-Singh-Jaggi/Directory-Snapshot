@@ -1,6 +1,0 @@
-#!/usr/bin/env bash
-
-TARGET="directory-snapshot"
-
-rm -r example/output
-bin/${TARGET} example/input example/output
