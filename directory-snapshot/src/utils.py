@@ -16,6 +16,7 @@ def escape_html_special_chars(filename, inside_href=False):
     def escape_char(ch):
         escape_map = {}
         # TODO: Test more
+        # TODO: Use urllib.parse.quote() here
         # https://www.werockyourweb.com/url-escape-characters/
         escape_map['&'] = '&amp;'
         escape_map['<'] = '&lt;'
