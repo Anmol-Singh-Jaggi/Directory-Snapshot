@@ -1,3 +1,4 @@
+#!/usr/bin/python3 -u
 from pathlib import Path
 import logging
 try:

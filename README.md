@@ -16,7 +16,7 @@
 ## Usage
 
 ```
-dir_snap [-h] [-dry] [-no-bar] [-no-hid] [-no-sym] [-max-rec MAX_RECURSION_DEPTH] src-path dest-path
+main.py [-h] [-dry] [-no-bar] [-no-hid] [-no-sym] [-max-rec MAX_RECURSION_DEPTH] src-path dest-path
 
 positional arguments:
   src-path              The path of the source directory.
@@ -39,7 +39,7 @@ optional arguments:
 ```
 
  - Example:  
-   `python3 dir_snap.py /Users/ajaggi/projects /Users/ajaggi/Desktop/snapshots --ignore-symlinks -no-hid -max-rec=5`
+   `python3 main.py /Users/ajaggi/projects /Users/ajaggi/Desktop/snapshots --ignore-symlinks -no-hid -max-rec=5`
 
 ## To-Do
  - Debug progress bar populating way too soon for projects dir.
