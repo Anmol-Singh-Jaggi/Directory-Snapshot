@@ -1,5 +1,4 @@
 import argparse
-import os
 
 
 def check_positive(value):
@@ -10,12 +9,9 @@ def check_positive(value):
 
 
 def prepare_args_parser():
-    '''
-    Construct and return the argument parser object.
-    '''
     description = 'Directory-Snapshot: A tool to create a snapshot'
     description += ' ( poor man\'s backup ) of a directory.\n'
-    epilog = 'Copyright (c) 2020 Anmol Singh Jaggi'
+    epilog = 'Copyright (c) 2021 Anmol Singh Jaggi'
     epilog += '\nhttps://anmol-singh-jaggi.github.io'
     epilog += '\nMIT License'
     parser = argparse.ArgumentParser(
@@ -24,9 +20,9 @@ def prepare_args_parser():
         epilog=epilog,
         formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument(
-        'src-path', help='The path of the source directory.')
+        'src-path', help='The path of the source directory')
     parser.add_argument(
-        'dest-path', help='The path of the destination directory.')
+        'dest-path', help='The path of the destination directory')
     parser.add_argument(
         '-dry',
         '--dry-run',
@@ -36,22 +32,22 @@ def prepare_args_parser():
         '-no-bar',
         '--hide-progress-bar',
         action='store_true',
-        help='Whether to hide the progress bar or not (default false).'
-             ' Will be silently ignored if `tqdm` package not found.')
+        help='Whether to hide the progress bar or not (default not hidden);'
+             ' will be silently ignored if "tqdm" package not found')
     parser.add_argument(
         '-no-hid',
         '--ignore-hidden',
         action='store_true',
-        help='Whether to ignore hidden files and directories or not (default false).')
+        help='Whether to ignore hidden files and directories or not (default not ignored)')
     parser.add_argument(
         '-no-sym',
         '--ignore-symlinks',
         action='store_true',
-        help='Whether to ignore symlinks or not (default false).')
+        help='Whether to ignore symlinks or not (default not ignored)')
     parser.add_argument(
         '-max-rec',
         '--max-recursion-depth',
-        help='Maximum recursion depth (non-negative integer only)',
+        help='Maximum recursion depth (default infinite)',
         type=check_positive,
         default=-1)
 

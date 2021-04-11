@@ -1,5 +1,7 @@
 from collections import deque
 from pathlib import Path
+from typing import List
+import logging
 
 
 def round_file_size_to_human_friendly_units(num_bytes):
@@ -36,28 +38,30 @@ def list_dir_contents(dir_path, ignore_symlinks, ignore_hidden):
         contents = filter(lambda path: not path.name.startswith('.'), contents) if ignore_hidden else contents
         contents = filter(lambda path: not path.is_symlink(), contents) if ignore_symlinks else contents
         return list(contents)
-    except Exception as e:
-        print(f"Error while listing directory contents of '{dir_path}': {e}")
+    except Exception:
+        logging.error(f"Error while listing directory contents of '{dir_path}'", exc_info=True)
 
 
 def get_num_files_in_dir_recursive(root_dir_path: Path, ignore_symlinks, ignore_hidden):
-    '''
-    Returns the number of files in the input directory.
+    """
+    Return the number of files in the input directory.
     Here "file" refers to everything (regular_files, directories, symlinks etc.).
-    '''
-    # Do BFS
+    """
     num_files = 0
-    bfsq = deque()
+    bfsq: deque = deque()
     bfsq.append(root_dir_path)
     while len(bfsq) > 0:
         top = bfsq.popleft()
         num_files += 1
-        if top.is_dir():
-            top_contents = list_dir_contents(top, ignore_symlinks, ignore_hidden)
-            if top_contents is None:
-                continue
-            for entry in top_contents:
-                bfsq.append(entry)
+        try:
+            if top.is_dir():
+                top_contents = list_dir_contents(top, ignore_symlinks, ignore_hidden)
+                if top_contents is None:
+                    continue
+                for entry in top_contents:
+                    bfsq.append(entry)
+        except Exception:
+            logging.error(f'Error while checking if "{top}" is directory nor not', exc_info=True)
     return num_files
 
 

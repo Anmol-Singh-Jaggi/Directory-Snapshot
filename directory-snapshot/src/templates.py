@@ -55,10 +55,10 @@ template_symlinks_table_row = r'''
 
 
 template_table_footer = r'''
-<br> <h3> Total directory size = {total_dir_size} </h3> <br>
+<br> <h3> Total directory size = {total_src_dir_size} </h3> <br>
 </body>
 </html>
 '''
 
 
-template_table_close= "</table>\n"
+template_table_close = "</table>\n"

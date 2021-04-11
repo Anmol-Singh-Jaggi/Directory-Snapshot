@@ -13,9 +13,6 @@
  - Requires Python 3.7+.
  - `pip install tqdm` (Required only if you want progress bar functionality).
 
-## Demo
-- TODO
-
 ## Usage
 
 ```
@@ -26,19 +23,19 @@ positional arguments:
   dest-path             The path of the destination directory.
 
 optional arguments:
-  -h, --help            show this help message and exit
-  -dry, --dry-run       Just estimate the size of source directory and exit
+  -h, --help            Show this help message and exit
+  -dry, --dry-run       Just estimate the size of source directory and exit.
   -no-bar, --hide-progress-bar
                         Whether to hide the progress bar or not (default
-                        false). Will be silently ignored if `tqdm` package not
+                        dont hide); will be silently ignored if "tqdm" package not
                         found.
   -no-hid, --ignore-hidden
                         Whether to ignore hidden files and directories or not
-                        (default false).
+                        (default not ignored).
   -no-sym, --ignore-symlinks
-                        Whether to ignore symlinks or not (default false).
+                        Whether to ignore symlinks or not (default not ignored).
   -max-rec MAX_RECURSION_DEPTH, --max-recursion-depth MAX_RECURSION_DEPTH
-                        Maximum recursion depth (non-negative integer only)
+                        Maximum recursion depth (default infinite).
 ```
 
  - Example:  
@@ -46,8 +43,6 @@ optional arguments:
 
 ## To-Do
  - Debug progress bar populating way too soon for projects dir.
- - Use `logging` module instead of `print` statements.
- - Log full exception stacktrace rather than just the message.
  - Test for unpredictable IO.
  - Add demo.
  - Publish to pypi.
@@ -55,11 +50,13 @@ optional arguments:
  - Add code coverage.
  - Setup `tox` and `Travis CI`.
  - Add benchmarks.
- - Explore parallel processing.
+ - Explore parallel processing (cannot use multiprocess pool due to blocking recursion).
  - ~~Implement `dry-run` option.~~
  - ~~Implement `no-hid` option.~~
  - ~~Implement `no-sym` option.~~
  - ~~Implement `max-rec` option.~~
+ - ~~Use `logging` module instead of `print` statements.~~
+ - ~~Log full exception stacktrace rather than just the message.~~
 
 [1]:https://technet.microsoft.com/en-in/library/cc755121.aspx
 [2]:https://www.microsoft.com/resources/documentation/windows/xp/all/proddocs/en-us/tree.mspx?mfr=true
