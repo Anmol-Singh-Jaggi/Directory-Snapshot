@@ -43,14 +43,14 @@ optional arguments:
 
 ## To-Do
  - Debug progress bar populating way too soon for projects dir.
- - Test for unpredictable IO.
  - Add demo.
  - Publish to pypi.
- - Add test cases.
+ - Add test cases (especially edge cases like permission errors etc).
  - Add code coverage.
  - Setup `tox` and `Travis CI`.
  - Add benchmarks.
- - Explore parallel processing (cannot use multiprocess pool due to blocking recursion).
+ - Add GUI.
+ - Explore parallel processing (Will have to use BFS instead of DFS probably).
  - ~~Implement `dry-run` option.~~
  - ~~Implement `no-hid` option.~~
  - ~~Implement `no-sym` option.~~
